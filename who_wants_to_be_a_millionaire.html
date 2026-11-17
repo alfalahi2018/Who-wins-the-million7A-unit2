@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Who Wants to Be a Millionaire? - 6 Groups</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:"Trebuchet MS",Arial,sans-serif;background:radial-gradient(circle at 50% 20%,#2a2f9e,#0a0d3d 70%);min-height:100vh;color:#fff;text-align:center}
+.wrap{max-width:980px;margin:0 auto;padding:12px}
+h1{margin:6px 0;font-size:30px;color:#ffd54a;text-shadow:0 0 12px #ffb300}
+.school{font-size:14px;color:#c5cae9}
+.panel{background:#10156aee;border:3px solid #ffd54a;border-radius:18px;padding:18px;margin:10px 0}
+.hidden{display:none!important}
+.big{font-size:22px;font-weight:bold;padding:12px 30px;border-radius:30px;border:3px solid #ffd54a;background:linear-gradient(#ffb300,#e65100);color:#fff;cursor:pointer;font-family:inherit;margin:6px}
+.big.sm{font-size:17px;padding:8px 18px}
+.sel button{width:56px;height:56px;border-radius:50%;font-size:24px;font-weight:bold;border:4px solid #ffd54a;background:#10156a;color:#fff;cursor:pointer;margin:4px}
+.sel button.on{background:#ffb300;color:#10156a}
+.main{display:grid;grid-template-columns:1fr 200px;gap:12px;align-items:start}
+.ladder{background:#10156aee;border:3px solid #ffd54a;border-radius:14px;padding:8px;display:flex;flex-direction:column-reverse;gap:4px}
+.step{padding:6px;border-radius:8px;font-size:17px;font-weight:bold;color:#ffd54a;display:flex;justify-content:space-between}
+.step.safe{color:#fff}
+.step.cur{background:#ff9800;color:#10156a}
+.step.done{background:#2e7d32;color:#fff}
+.who{font-size:24px;font-weight:bold;margin-bottom:8px}
+.life{display:flex;gap:8px;justify-content:center;margin:8px 0;flex-wrap:wrap}
+.life button{border-radius:30px;border:3px solid #ffd54a;background:#10156a;color:#fff;font-size:16px;font-weight:bold;padding:8px 14px;cursor:pointer;font-family:inherit}
+.life button:disabled{opacity:.3;text-decoration:line-through;cursor:default}
+.qbox{background:linear-gradient(#1a237e,#0d1250);border:3px solid #fff;border-radius:40px;padding:18px 22px;font-size:24px;min-height:90px;display:flex;align-items:center;justify-content:center;margin:10px 0}
+.tag{font-size:13px;color:#ffd54a}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opts button{font-size:19px;padding:14px 18px;border-radius:30px;border:3px solid #fff;background:linear-gradient(#1a237e,#0d1250);color:#fff;cursor:pointer;font-family:inherit;text-align:left;position:relative;overflow:hidden}
+.opts button b{color:#ffb300;margin-right:8px}
+.opts button.sel{background:#ff9800;color:#10156a}
+.opts button.ok{background:#2e7d32;border-color:#a5d6a7}
+.opts button.no{background:#c62828;border-color:#ef9a9a}
+.opts button.gone{visibility:hidden}
+.opts button i{position:absolute;left:0;bottom:0;height:5px;background:#ffd54a}
+.msg{font-size:22px;font-weight:bold;min-height:32px;margin:8px 0;color:#ffd54a}
+.rank div{font-size:22px;margin:6px}
+.credit{margin:16px 0 6px;font-size:14px;color:#c5cae9}
+@media(max-width:700px){.main{grid-template-columns:1fr}.ladder{flex-direction:row;flex-wrap:wrap-reverse;justify-content:center}.step{font-size:12px;padding:4px 6px}.opts{grid-template-columns:1fr}.qbox{font-size:19px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>💎 Who Wants to Be a Millionaire? 💎</h1>
+  <div class="school">Khawlah Bint Thalabah (5-9) &middot; Grade 7 &middot; Unit 2: Awesome animals</div>
+
+  <div id="start" class="panel">
+    <div style="font-size:70px">💰</div>
+    <p style="font-size:20px">Each group plays <b>8 questions</b> and climbs the money ladder up to <b>$1,000,000</b>!<br>Your safe amount is <b>$1,000</b>. Use your 3 lifelines wisely.</p>
+    <p style="font-size:20px"><b>How many groups?</b></p>
+    <div class="sel" id="sel"></div>
+    <button class="big" onclick="startGame()">Let's Play!</button>
+  </div>
+
+  <div id="game" class="hidden">
+    <div class="main">
+      <div class="panel">
+        <div class="who" id="who"></div>
+        <div class="life">
+          <button id="l50" onclick="fifty()">50:50</button>
+          <button id="lAud" onclick="audience()">👥 Ask the class</button>
+          <button id="lSw" onclick="swapQ()">🔄 Switch question</button>
+        </div>
+        <div class="tag" id="tag"></div>
+        <div class="qbox" id="q"></div>
+        <div class="opts" id="opts"></div>
+        <div class="msg" id="msg"></div>
+        <button class="big hidden" id="final" onclick="finalAnswer()">Final answer?</button>
+        <button class="big sm" id="walk" onclick="walkAway()">💵 Take the money</button>
+        <button class="big hidden" id="next" onclick="nextGroup()">Next group ➜</button>
+      </div>
+      <div class="ladder" id="ladder"></div>
+    </div>
+  </div>
+
+  <div id="end" class="panel hidden">
+    <div style="font-size:80px">🏆</div>
+    <h2 id="endTitle"></h2>
+    <div class="rank" id="rank"></div>
+    <button class="big" onclick="location.reload()">Play again</button>
+  </div>
+
+  <div class="credit">Created by T.Badria Alfalahi</div>
+</div>
+
+<script>
+var V="Animal verbs",B="Body parts",M="Modals of deduction",C="First conditional",G="Going to / Will";
+var BANK=[
+[V,"The rabbit sees the fox. It ___ quickly.","run away",["dig","sting","lay eggs"]],
+[V,"The monkey should ___ in the trees when it sees danger.","hide",["dive","lay eggs","roar"]],
+[V,"Two goats can ___ with their horns.","fight",["dive","hide","curl up"]],
+[V,"The crab uses its claws to ___ a hole in the sand.","dig",["roar","fly away","die"]],
+[V,"A crocodile can ___ you with its big teeth.","bite",["lay eggs","curl up","dive"]],
+[V,"A turtle can ___ on the beach.","lay eggs",["bite","die","roar"]],
+[V,"The bird is scared. It will ___.","fly away",["dig","roar","sting"]],
+[V,"A bee can ___ you if you touch it.","sting",["dig","hide","dive"]],
+[V,"A lion can ___ very loudly.","roar",["dig","hide","sting"]],
+[V,"A hedgehog can ___ into a ball when it is scared.","curl up",["dive","roar","bite"]],
+[V,"A shark can ___ deep into the sea.","dive",["curl up","lay eggs","roar"]],
+[V,"A fish can ___ if there is no water.","die",["dig","roar","fight"]],
+[V,"Which words mean: to go away quickly because you are afraid?","run away",["curl up","lay eggs","dive"]],
+[V,"Birds ___ in their nests.","lay eggs",["sting","roar","dive"]],
+[B,"A bird uses its ___ to eat.","beak",["horn","fins","hump"]],
+[B,"A cat has long ___ on its face.","whiskers",["hump","fins","paws"]],
+[B,"A rhino has a ___ on its nose.","horn",["beak","paws","fins"]],
+[B,"A fish uses its ___ to swim.","fins",["paws","hump","horn"]],
+[B,"A camel has a ___ on its back.","hump",["beak","whiskers","fins"]],
+[B,"A cat has four soft ___.","paws",["fins","beak","hump"]],
+[M,"I'm not sure, but it ___ be a snake. It's long and has no legs.","may",["must","can't","will"]],
+[M,"I'm sure! It's black and white and looks like a horse. It ___ be a zebra.","must",["can't","may","could"]],
+[M,"It's very small and has two wings. It ___ be an elephant.","can't",["must","might","may"]],
+[M,"It has two legs and it lays eggs. I'm sure it ___ be a bird.","must",["can't","might","may"]],
+[M,"It's very big and grey with big ears. I'm not sure, but it ___ be an elephant.","might",["must","can't","will"]],
+[M,"It lives in the sea and has fins. It ___ be a camel.","can't",["must","might","could"]],
+[M,"It has a very long neck. I'm not sure, but it ___ be a giraffe.","could",["can't","must","will"]],
+[M,"Put the words in order: interesting / insects / really / I / find","I find insects really interesting.",["I insects find really interesting.","Find I really insects interesting.","Really I find interesting insects."]],
+[C,"If I pass my English exam, I ___ happy.","will be",["would be","was","am being"]],
+[C,"If students don't do their homework, the teacher ___ angry.","will be",["would be","was","is being"]],
+[C,"If you come with us, you ___ with the best animals.","will be",["would be","are being","was"]],
+[C,"If I don't join the fish, they ___ angry.","will be",["would be","are being","was"]],
+[C,"If I join the lions, the birds ___ happy.","won't be",["don't be","isn't","not will be"]],
+[C,"If it rains tomorrow, we ___ at home.","will stay",["would stay","stayed","staying"]],
+[C,"If you ___ hard, you will pass the exam.","study",["will study","studied","studying"]],
+[C,"If she ___ late, she will miss the bus.","is",["will be","was","being"]],
+[G,"I've already decided! Next summer I ___ visit London.","am going to",["will","going to","am go to"]],
+[G,"Oh, the phone is ringing! I ___ answer it.","will",["am going to","going to","did"]],
+[G,"We bought the tickets yesterday. We ___ travel on Friday.","are going to",["will","is going to","are going"]],
+[G,"A: It's hot in here. B: I ___ open the window.","will",["am going to","going to","did"]],
+[G,"She has a plan. She ___ look for it now.","is going to",["will","are going to","going to"]],
+[G,"Negative form: I ___ travel. (will)","won't",["not will","don't will","willn't"]],
+[G,"Negative form: I'm ___ going to travel.","not",["don't","won't","no"]],
+[G,"Going to: Subject + ___ + going to + base verb.","am / is / are",["will","do / does","have / has"]],
+[G,"Which sentence shows a PLAN?","I'm going to visit London.",["I'll take a small bag, too.","We'll get some sweets.","I'll help you now."]],
+[G,"Which sentence is a decision AT THE MOMENT of speaking?","I'll help you now.",["We're going to take a guidebook.","She's going to look for it now.","I'm going to visit London."]],
+[G,"We use ___ when we decide at the time of speaking.","will",["going to","would","did"]],
+[B,"Which word is an animal body part?","hump",["roar","dig","hide"]]
+];
+var AMT=[100,300,500,1000,5000,10000,100000,1000000];
+var LET=["A","B","C","D"];
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function money(n){return "$"+n.toLocaleString("en-US")}
+var AC=window.AudioContext||window.webkitAudioContext,ac;
+function beep(f,d){try{ac=ac||new AC();var o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;g.gain.value=.15;o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+d)}catch(e){}}
+function $(id){return document.getElementById(id)}
+var N=6,g,lvl,deck,won,used,cur,opts,sel,locked,gone;
+function drawSel(){var h="";for(var k=2;k<=6;k++)h+='<button class="'+(k==N?"on":"")+'" onclick="N='+k+';drawSel()">'+k+'</button>';$("sel").innerHTML=h}
+drawSel();
+function show(id){["start","game","end"].forEach(function(x){$(x).classList.toggle("hidden",x!==id)})}
+function startGame(){deck=shuffle(BANK);won=[];g=0;show("game");beginGroup()}
+function beginGroup(){
+  lvl=0;used={f:false,a:false,s:false};
+  $("l50").disabled=$("lAud").disabled=$("lSw").disabled=false;
+  $("who").textContent="🎤 Group "+(g+1)+", you're in the hot seat!";
+  $("next").classList.add("hidden");$("walk").classList.remove("hidden");
+  drawLadder();ask();
+}
+function drawLadder(){
+  var h="";
+  for(var k=0;k<8;k++){
+    h+='<div class="step '+(k==3||k==7?"safe ":"")+(k<lvl?"done":k==lvl?"cur":"")+'"><span>'+(k+1)+'</span><span>'+money(AMT[k])+'</span></div>';
+  }
+  $("ladder").innerHTML=h;
+}
+function ask(){
+  if(!deck.length)deck=shuffle(BANK);
+  cur=deck.pop();locked=false;sel=null;gone=[];
+  opts=shuffle([cur[2]].concat(cur[3]));
+  renderQ();
+  $("msg").textContent="Question for "+money(AMT[lvl]);
+  $("final").classList.add("hidden");
+}
+function renderQ(pcts){
+  $("tag").textContent=cur[0];$("q").textContent=cur[1];
+  var h="";
+  opts.forEach(function(o,i){
+    h+='<button class="'+(gone.indexOf(i)>=0?"gone ":"")+(sel===i?"sel":"")+'" onclick="pick('+i+')"><b>'+LET[i]+':</b>'+o+(pcts?'<i style="width:'+pcts[i]+'%"></i>':"")+'</button>';
+  });
+  $("opts").innerHTML=h;
+}
+function pick(i){if(locked||gone.indexOf(i)>=0)return;sel=i;renderQ();$("final").classList.remove("hidden");beep(440,.08)}
+function finalAnswer(){
+  if(locked||sel===null)return;locked=true;
+  $("final").classList.add("hidden");$("walk").classList.add("hidden");
+  var right=opts.indexOf(cur[2]),b=$("opts").children;
+  if(sel===right){
+    b[sel].className="ok";beep(660,.15);setTimeout(function(){beep(880,.25)},160);
+    $("msg").textContent="✅ Correct! You have "+money(AMT[lvl]);
+    setTimeout(function(){
+      if(lvl==7){endGroup(AMT[7],"🎉 MILLIONAIRE! 🎉")}
+      else{lvl++;drawLadder();$("walk").classList.remove("hidden");ask()}
+    },1800);
+  }else{
+    b[sel].className="no";b[right].className="ok";beep(180,.5);
+    var safe=lvl>=4?1000:0;
+    $("msg").textContent="❌ Wrong! The answer is: "+cur[2];
+    setTimeout(function(){endGroup(safe,"You leave with "+money(safe))},2200);
+  }
+}
+function walkAway(){
+  if(locked)return;locked=true;
+  var m=lvl>0?AMT[lvl-1]:0;
+  endGroup(m,"You take the money: "+money(m));
+}
+function endGroup(m,text){
+  won[g]=m;locked=true;
+  $("walk").classList.add("hidden");$("final").classList.add("hidden");
+  $("msg").textContent="Group "+(g+1)+": "+text;
+  if(m>=1000000){beep(523,.15);setTimeout(function(){beep(659,.15)},160);setTimeout(function(){beep(784,.4)},320)}
+  $("next").textContent=g<N-1?"Next group ➜":"See results 🏆";
+  $("next").classList.remove("hidden");
+}
+function nextGroup(){
+  if(g<N-1){g++;beginGroup()}else finish();
+}
+function finish(){
+  show("end");
+  var order=[];for(var k=0;k<N;k++)order.push(k);
+  order.sort(function(a,b){return won[b]-won[a]});
+  $("endTitle").textContent="Group "+(order[0]+1)+" is the winner! 🎉";
+  var medals=["🥇","🥈","🥉"],h="";
+  order.forEach(function(k,i){h+='<div>'+(medals[i]||"")+' Group '+(k+1)+': '+money(won[k])+'</div>'});
+  $("rank").innerHTML=h;
+}
+/* Lifelines */
+function fifty(){
+  if(used.f||locked)return;used.f=true;$("l50").disabled=true;
+  var right=opts.indexOf(cur[2]),wrong=[];
+  opts.forEach(function(o,i){if(i!==right&&gone.indexOf(i)<0)wrong.push(i)});
+  shuffle(wrong).slice(0,2).forEach(function(i){gone.push(i)});
+  if(gone.indexOf(sel)>=0){sel=null;$("final").classList.add("hidden")}
+  renderQ();
+}
+function audience(){
+  if(used.a||locked)return;used.a=true;$("lAud").disabled=true;
+  var right=opts.indexOf(cur[2]),alive=[];
+  opts.forEach(function(o,i){if(gone.indexOf(i)<0)alive.push(i)});
+  var p=[0,0,0,0],top=45+Math.floor(Math.random()*26),rest=100-top;
+  var others=alive.filter(function(i){return i!==right});
+  p[right]=top;
+  others.forEach(function(i,k){
+    if(k==others.length-1)p[i]=rest;
+    else{var x=Math.floor(Math.random()*rest);p[i]=x;rest-=x}
+  });
+  renderQ(p);
+  $("msg").textContent="👥 The class voted: "+alive.map(function(i){return LET[i]+" "+p[i]+"%"}).join("  |  ");
+}
+function swapQ(){
+  if(used.s||locked)return;used.s=true;$("lSw").disabled=true;
+  ask();$("msg").textContent="🔄 New question for "+money(AMT[lvl]);
+}
+</script>
+</body>
+</html>
